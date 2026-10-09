@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- **No more forced system prompt on pi >= 0.86** — the `before_agent_start`
+  hook now filters `event.systemPromptOptions.skills` instead of returning a
+  rewritten `systemPrompt`. pi re-renders the prompt itself, so it stays
+  structured (cache-friendly prompt/tool deltas) and enabled skills stay inside
+  pi's `<skills>` section. Older pi, or a prompt already forced by another
+  extension, falls back to the previous text rewrite.
+- 4 new tests (229 total, up from 225)
+
 ## 0.9.0 — 2026-06-28
 
 ### Added
