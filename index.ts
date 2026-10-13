@@ -249,7 +249,7 @@ export function buildVisibleBlock(rows: SkillVisibility[]): string | null {
 /** The parts of pi's `before_agent_start` event the gate reads. */
 export interface GateEvent {
   systemPrompt: string;
-  systemPromptOptions?: { skills?: Skill[] };
+  systemPromptOptions?: { skills?: Skill[]; sections?: Record<string, string | undefined> };
 }
 
 /**
@@ -267,6 +267,9 @@ export function gateSystemPrompt(event: GateEvent, rows: SkillVisibility[]): { s
     const enabled = new Set(rows.filter((r) => r.state === "enabled").map((r) => r.name));
     const hidden = opts.skills.filter((s) => !enabled.has(s.name));
     opts.skills = opts.skills.filter((s) => enabled.has(s.name));
+    // An earlier handler (e.g. pi-cache-optimizer) may have rendered the unfiltered list into the
+    // `skills` section, which overrides Pi's own; drop it so Pi re-renders from the filtered skills.
+    if (hidden.length > 0 && opts.sections?.skills) delete opts.sections.skills;
     if (!hidden.some((s) => event.systemPrompt.includes(`<location>${escapeXml(s.filePath)}</location>`))) return undefined;
   }
 

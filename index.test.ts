@@ -907,6 +907,19 @@ describe("gateSystemPrompt", () => {
     expect(systemPromptOptions.skills.map((s) => s.name)).toEqual(["alpha"]);
   });
 
+  it("pi >= 0.86: drops a skills section an earlier handler rendered from the unfiltered list", () => {
+    const systemPromptOptions = {
+      skills: [skill("alpha"), skill("beta")],
+      sections: { skills: "## Skills\n- alpha: alpha desc\n- beta: beta desc" } as Record<string, string | undefined>,
+    };
+    // A custom skills section overrides Pi's own rendering, like pi-cache-optimizer's compressed list.
+    const event = { systemPromptOptions, get systemPrompt() { return systemPromptOptions.sections.skills ?? render(systemPromptOptions.skills); } };
+    expect(gateSystemPrompt(event, rows)).toBeUndefined();
+    expect(systemPromptOptions.sections.skills).toBeUndefined();
+    expect(event.systemPrompt).toContain("<name>alpha</name>");
+    expect(event.systemPrompt).not.toContain("beta");
+  });
+
   it("older pi (stale prompt string): falls back to rewriting the prompt text", () => {
     const skills = [skill("alpha"), skill("beta")];
     const event = { systemPromptOptions: { skills }, systemPrompt: render(skills) };
